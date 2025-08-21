@@ -1,0 +1,60 @@
+.chat-container {
+  height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #e5ddd5;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+.message {
+  max-width: 60%;
+  margin: 5px 0;
+  padding: 10px 15px;
+  border-radius: 10px;
+  color: #000;
+  display: inline-block;
+  word-wrap: break-word;
+}
+
+.right {
+  background-color: #dcf8c6; // Cor padrão para suas mensagens
+  margin-left: auto;
+  text-align: right;
+}
+
+.left {
+  background-color: #fff; // Cor padrão para outras mensagens (sobrescrita por getUserColor)
+  margin-right: auto;
+  text-align: left;
+}
+
+.input-container {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background-color: #f0f0f0;
+
+  input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+
+  button {
+    padding: 5px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #075e54;
+    color: white;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #054d44;
+    }
+  }
+}
