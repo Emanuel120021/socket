@@ -1,0 +1,22 @@
+<div class="div-principal">
+  <div class="div-central">
+    <h1>Login</h1>
+    <form [formGroup]="loginForm">
+      <input
+        class="input-login"
+        type="text"
+        formControlName="login"
+        placeholder="login"
+        id="login"
+      />
+      <input
+        class="input-login"
+        type="password"
+        formControlName="senha"
+        placeholder="senha"
+        id="senha"
+      />
+      <button (click)="entrar()" class="bt-login">Entrar</button>
+    </form>
+  </div>
+</div>

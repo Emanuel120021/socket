@@ -8,12 +8,13 @@ import io from 'socket.io-client';
 export class SocketService {
   private socket = io('http://localhost:3000');
 
-  sendMessage(message: string) {
+  sendMessage(message: any) {
+    console.log(message);
     this.socket.emit('emit', message);
   }
 
-  getMessages(): Observable<{ user: string; message: string }> {
-    return new Observable<{ user: string; message: string }>((observer) => {
+  getMessages(): Observable<{ user: string; message: any }> {
+    return new Observable<{ user: string; message: any }>((observer) => {
       this.socket.on('emit', (data) => {
         observer.next(data);
       });
