@@ -4,6 +4,6 @@
   }
 </ul>
 <div>
-  <input [(ngModel)]="message" (keydown.enter)="sendMessage()" type="text" />
-  <button (click)="sendMessage()">Send</button>
+  <input [(ngModel)]="message" (keydown.enter)="send()" type="text" />
+  <button (click)="send()">Send</button>
 </div>

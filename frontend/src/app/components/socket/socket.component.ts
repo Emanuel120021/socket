@@ -22,9 +22,9 @@ export class SocketComponent {
     });
   }
 
-  sendMessage() {
+  send() {
     if (this.message) {
-      this.socket.sendMessage(this.message);
+      this.socket.send(this.message);
       this.message = '';
     }
   }

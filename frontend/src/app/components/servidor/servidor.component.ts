@@ -14,27 +14,25 @@ export class ServidorComponent implements OnInit, OnDestroy {
   message!: string;
   messages: { user: string; message: string }[] = [];
 
-  latitude?: number;
-  longitude?: number;
+  latitude: number = -23.55052; // Ponto inicial (exemplo: São Paulo, Brasil)
+  longitude: number = -46.633308;
   error?: string;
 
   private intervalId?: any;
+  private speed: number = 0.0001; // Velocidade base do movimento (em graus)
+  private direction: number = Math.random() * 2 * Math.PI; // Direção inicial aleatória (em radianos)
 
   constructor(private socket: SocketService) {}
 
   ngOnInit(): void {
-    if ('geolocation' in navigator) {
-      // pega a primeira vez
-      this.updateLocation();
+    // Inicia a simulação de localização
+    this.updateLocation();
 
-      // repete a cada 10s
-      this.intervalId = setInterval(() => {
-        this.updateLocation();
-        this.sendLocation();
-      }, 10000);
-    } else {
-      this.error = 'Geolocalização não suportada neste navegador';
-    }
+    // Atualiza a localização a cada 5 segundos
+    this.intervalId = setInterval(() => {
+      this.updateLocation();
+      this.sendLocation();
+    }, 5000);
   }
 
   ngOnDestroy(): void {
@@ -44,25 +42,34 @@ export class ServidorComponent implements OnInit, OnDestroy {
   }
 
   private updateLocation() {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        this.latitude = position.coords.latitude;
-        this.longitude = position.coords.longitude;
-      },
-      (err) => {
-        this.error = err.message;
-      }
-    );
+    // Adiciona uma pequena variação aleatória na direção
+    this.direction += (Math.random() - 0.5) * 0.2; // Variação de ±0.1 radiano
+
+    // Calcula o deslocamento em latitude e longitude com base na direção
+    const deltaLat = this.speed * Math.cos(this.direction);
+    const deltaLon = this.speed * Math.sin(this.direction);
+
+    // Atualiza as coordenadas
+    this.latitude += deltaLat;
+    this.longitude += deltaLon;
+
+    // Adiciona um pequeno ruído aleatório para simular imperfeições no movimento
+    this.latitude += (Math.random() - 0.5) * 0.00002;
+    this.longitude += (Math.random() - 0.5) * 0.00002;
+
+    // Limita as coordenadas para evitar valores fora de intervalos válidos
+    this.latitude = Math.max(-90, Math.min(90, this.latitude));
+    this.longitude = Math.max(-180, Math.min(180, this.longitude));
   }
 
   sendLocation() {
     if (this.latitude && this.longitude) {
       const payload = {
-        user: 'meu-usuario', // você pode trocar pelo ID do usuário logado
+        user: 'meu-usuario', // Pode ser substituído pelo ID do usuário logado
         latitude: this.latitude,
         longitude: this.longitude,
       };
-      this.socket.sendMessage(payload);
+      this.socket.send(payload);
     }
   }
 }

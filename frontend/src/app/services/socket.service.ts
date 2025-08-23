@@ -8,7 +8,7 @@ import io from 'socket.io-client';
 export class SocketService {
   private socket = io('http://localhost:3000');
 
-  sendMessage(message: any) {
+  send(message: any) {
     console.log(message);
     this.socket.emit('emit', message);
   }
