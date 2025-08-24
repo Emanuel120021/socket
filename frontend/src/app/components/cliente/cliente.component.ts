@@ -13,68 +13,111 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 export class ClienteComponent {
   message!: string;
   messages: any[] = [];
+  userStatuses: { [userId: string]: string } = {};
+  userIdToCheck: string = '';
+  userId: string = 'cliente';
+  private marker?: maplibregl.Marker;
   @ViewChild('map') private mapContainer!: ElementRef<HTMLElement>;
-  private map?: Map;
 
   constructor(private socket: SocketService) {}
 
   ngOnInit() {
+    this.socket.registerUser(this.userId);
+    const map = new maplibregl.Map({
+      container: 'map',
+      style:
+        'https://api.maptiler.com/maps/streets/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
+      center: [-35.271316, -5.911555], // Parnamirim, RN
+      zoom: 15,
+    });
+
+    let coordenadas: [number, number][] = [];
+
+    map.on('load', () => {
+      map.addSource('route', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: coordenadas,
+          },
+        },
+      });
+
+      map.addLayer({
+        id: 'route',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': '#0000FF',
+          'line-width': 4,
+        },
+      });
+    });
+
     this.socket.getMessages().subscribe((data) => {
       this.messages.push(data);
       if (data.message.latitude && data.message.longitude) {
-        console.log('TESTE');
-        this.addMarkerToMap(
-          data.message.latitude,
-          data.message.longitude,
-          data.user
+        console.log(
+          `Coordenadas recebidas: Lat ${data.message.latitude.toFixed(
+            6
+          )}, Lng ${data.message.longitude.toFixed(6)}`
         );
-        // Centraliza o mapa na nova localização (opcional)
-        console.log(typeof data.message.longitude);
-        console.log(typeof data.message.latitude);
-        this.map?.panTo([data.message.longitude, data.message.latitude]);
+        if (this.marker) {
+          this.marker.remove();
+        }
+        const iconElement = document.createElement('div');
+        iconElement.style.backgroundImage = 'url(assets/bus-icon.png)';
+        iconElement.style.width = '32px';
+        iconElement.style.height = '32px';
+        iconElement.style.backgroundSize = 'contain';
+        iconElement.style.backgroundRepeat = 'no-repeat';
+        iconElement.style.backgroundPosition = 'center';
+
+        this.marker = new maplibregl.Marker({ element: iconElement })
+          .setLngLat([data.message.longitude, data.message.latitude])
+          .addTo(map);
+
+        // coordenadas.push([data.message.longitude, data.message.latitude]);
+        // console.log('Coordenadas da rota:', coordenadas);
+
+        // const routeSource = map.getSource('route') as maplibregl.GeoJSONSource;
+        // routeSource?.setData({
+        //   type: 'Feature',
+        //   properties: {},
+        //   geometry: {
+        //     type: 'LineString',
+        //     coordinates: coordenadas,
+        //   },
+        // });
+
+        map.panTo([data.message.longitude, data.message.latitude]);
       }
     });
 
-    const map = new maplibregl.Map({
-      container: 'map', // container id
-      style: 'https://tiles.openfreemap.org/styles/liberty', // style URL
-      center: [-46.633308, -23.55052], // starting position [lng, lat]
-      zoom: 2, // starting zoom
+    this.socket.getUserOnline().subscribe((data) => {
+      this.userStatuses[data.userId] = data.status;
+      console.log(`Usuário ${data.userId} está ${data.status}`);
+    });
+
+    this.socket.getUserOffline().subscribe((data) => {
+      this.userStatuses[data.userId] = data.status;
+      console.log(`Usuário ${data.userId} está ${data.status}`);
     });
   }
 
-  private initializeMap(): void {
-    if (!this.mapContainer) {
-      console.error('Contêiner do mapa não encontrado');
-      return;
+  checkUserStatus() {
+    if (this.userIdToCheck) {
+      this.socket.checkUserStatus(this.userIdToCheck).subscribe((response) => {
+        this.userStatuses[response.userId] = response.status;
+        console.log(`Status do usuário ${response.userId}: ${response.status}`);
+      });
     }
-
-    this.map = new maplibregl.Map({
-      container: this.mapContainer.nativeElement,
-      style: 'https://tiles.openfreemap.org/styles/liberty', // Estilo OpenFreeMap
-      center: [-46.633308, -23.55052], // [lng, lat] - São Paulo
-      zoom: 10,
-    });
-  }
-
-  private addMarkerToMap(lat: number, lng: number, user: string): void {
-    if (!this.map) return;
-
-    const marker = new maplibregl.Marker({
-      color: '#FF0000', // Cor do marcador (ajuste se quiser)
-    })
-      .setLngLat([lng, lat])
-      .setPopup(
-        new maplibregl.Popup().setHTML(
-          `<h3>Usuário: ${user}</h3><p>Lat: ${lat.toFixed(
-            6
-          )}</p><p>Lng: ${lng.toFixed(6)}</p>`
-        )
-      )
-      .addTo(this.map);
-  }
-
-  ngOnDestroy(): void {
-    this.map?.remove(); // Remove o mapa para evitar memory leaks
   }
 }

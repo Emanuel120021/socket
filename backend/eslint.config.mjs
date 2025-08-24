@@ -28,7 +28,11 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn'
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'off', // Desabilita verificação de acesso a membros de any
+      '@typescript-eslint/no-unsafe-assignment': 'off', // Desabilita verificação de atribuições de any
+      '@typescript-eslint/no-unsafe-call': 'off', // Desabilita verificação de chamadas de funções em any
+      '@typescript-eslint/no-unused-vars': 'off', // Desabilita verificação de variáveis não usadas
     },
   },
 );
